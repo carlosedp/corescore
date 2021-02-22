@@ -155,6 +155,8 @@ filesets:
       - rtl/corescore_polarfire_eval_clock_gen.v: { file_type: verilogSource }
       - rtl/corescore_polarfire.v: { file_type: verilogSource }
       - data/polarfire_eval.pdc: { file_type: PDC }
+      - data/libero-post-instructions.txt:
+          { file_type: user, copyto: post-instructions.txt }
 
 targets:
   alhambra_II:
@@ -366,29 +368,26 @@ targets:
         nextpnr_options: [--package, CABGA381, --85k, --speed, 8]
     toplevel: corescore_fpc_iii
 
-  polarfireeval:
+  polarfireeval: &polarfireeval
     default_tool: libero
     description: Microsemi Polarfire Evaluation Kit
     filesets: [rtl, polarfireeval]
+    hooks:
+      post_run: [libero_post]
     generate: [polarfireeval]
     tools:
-      libero:
+      libero: &liberoMPF300
         family: PolarFire
         die: MPF300TS
         package: FCG1152
     toplevel: corescore_polarfire
 
   polarfireeval_es:
-    default_tool: libero
-    description: Microsemi Polarfire Evaluation Kit (ES)
-    filesets: [rtl, polarfireeval]
-    generate: [polarfireeval]
+    <<: *polarfireeval
     tools:
       libero:
-        family: PolarFire
+        <<: *liberoMPF300
         die: MPF300TS_ES
-        package: FCG1152
-    toplevel: corescore_polarfire
 
 generate:
   corescorecore_alhambra_II:
@@ -524,3 +523,7 @@ parameters:
   vcd:
     datatype: bool
     paramtype: plusarg
+
+scripts:
+  libero_post:
+    cmd: ["python3", "-c", "print(open('post-instructions.txt','r').read())"]
